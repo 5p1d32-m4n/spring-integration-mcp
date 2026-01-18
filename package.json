@@ -1,0 +1,29 @@
+{
+  "name": "spring-integration-test-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for efficient Spring Boot integration testing workflow",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "spring-boot",
+    "integration-testing",
+    "java"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "fast-xml-parser": "^4.3.2",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}

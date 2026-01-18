@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "spring-integration-test": {
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USERNAME\\Dev\\spring-integration-test-mcp\\dist\\index.js"],
+      "env": {}
+    }
+  }
+}

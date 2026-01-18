@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "spring-integration-test": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/spring-integration-test-mcp/dist/index.js"],
+      "env": {}
+    }
+  }
+}
