@@ -18,7 +18,42 @@ A Model Context Protocol (MCP) server optimized for **token-efficient** Spring B
 
 ## 📦 Installation
 
-### Quick Install
+### Quick Start
+
+Choose your setup based on where you're running Claude Code:
+
+**Option A: Inside Distrobox/Toolbox (Recommended for Bazzite)**
+```bash
+# Inside your distrobox:
+cd ~/Dev/spring-integration-test-mcp
+npm install
+npm run build
+
+# Configure ~/.claude.json with:
+# Add to "mcpServers" section:
+# "spring-integration-test": {
+#   "command": "node",
+#   "args": ["/home/username/Dev/spring-integration-test-mcp/dist/index.js"]
+# }
+```
+
+**Option B: On Native Host (Ubuntu, Fedora, Arch, etc.)**
+```bash
+# On your native host:
+cd /path/to/spring-integration-test-mcp
+podman build -t spring-integration-test-mcp .
+
+# Configure ~/.claude.json with:
+# Add to "mcpServers" section:
+# "spring-integration-test": {
+#   "command": "podman",
+#   "args": ["run", "-i", "--rm", "-v", "/path/to/project:/workspace", "spring-integration-test-mcp"]
+# }
+```
+
+**Full Details:** See [MCP_SETUP.md](MCP_SETUP.md) for complete setup instructions and troubleshooting.
+
+### Traditional Installation
 
 **Linux/macOS:**
 ```bash
@@ -539,8 +574,31 @@ Returns:
 - **Linux:** `sudo apt-get install podman` or `sudo dnf install podman`
 - **macOS:** `brew install podman && podman machine init && podman machine start`
 - **Windows:** `winget install RedHat.Podman`
+- **Bazzite Linux:** Already installed via "bazaar" package manager
 
 The server works without containers - they're optional for future features.
+
+### Running as a Container
+
+You can run the entire MCP server in a container (includes Maven + Java):
+
+```bash
+# Build the image
+podman build -t spring-integration-test-mcp .
+
+# Configure Claude Code to use the container
+# See DOCKER_GUIDE.md for details
+```
+
+**Benefits:**
+- Isolated environment with all dependencies (Maven, Java, Node.js)
+- Works consistently across systems
+- No need to install Maven/Java locally
+
+**Special notes:**
+- **Distrobox/Toolbox users:** Build on your host system, not inside the container
+- **User ID matching:** Container uses build args to match your host UID (default 1000)
+- See [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for full container setup and troubleshooting
 
 ## 📄 License
 

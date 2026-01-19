@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "spring-integration-test": {
+      "command": "node",
+      "args": ["/home/brandon/Dev/spring-integration-test-mcp/dist/index.js"],
+      "env": {},
+      "description": "Token-efficient Spring Boot integration testing tools"
+    }
+  }
+}
