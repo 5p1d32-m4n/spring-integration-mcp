@@ -6,10 +6,17 @@ A token-efficient MCP server for Spring Boot integration testing. Returns struct
 
 ## Build & Run
 
+### Docker (Recommended)
+```bash
+docker build -t spring-integration-test-mcp .
+```
+
+Then copy `.mcp.json` to any Spring Boot project to use it.
+
+### Local Node.js
 ```bash
 npm install
 npm run build
-npm start
 ```
 
 ## Architecture

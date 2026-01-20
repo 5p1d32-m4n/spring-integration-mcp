@@ -6,6 +6,9 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  Resource,
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -16,6 +19,7 @@ import { XMLParser } from "fast-xml-parser";
 import { platform } from "os";
 
 const execAsync = promisify(exec);
+const DEFAULT_WORKSPACE = process.env.MCP_WORKSPACE || "/workspace";
 
 // Detect container runtime (Docker or Podman)
 let containerRuntime: string | null = null;
@@ -48,6 +52,12 @@ async function detectContainerRuntime(): Promise<string> {
 function getMavenCommand(): string {
   const isWindows = platform() === "win32";
   return isWindows ? "mvn.cmd" : "mvn";
+}
+
+function resolveProjectPath(input?: string): string {
+  if (!input || input.trim() === "") return DEFAULT_WORKSPACE;
+  if (/^[A-Za-z]:\\/.test(input)) return DEFAULT_WORKSPACE;
+  return input;
 }
 
 // Tool definitions
@@ -260,6 +270,15 @@ const TOOLS: Tool[] = [
       },
       required: ["projectPath", "serviceName"],
     },
+  },
+];
+
+const RESOURCES: Resource[] = [
+  {
+    uri: "mcp://spring-integration-test/health",
+    name: "health",
+    description: "Simple liveness resource to verify the MCP server is reachable",
+    mimeType: "text/plain",
   },
 ];
 
@@ -971,9 +990,32 @@ const server = new Server(
   {
     capabilities: {
       tools: {},
+      resources: {},
     },
   }
 );
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  return { resources: RESOURCES };
+});
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+
+  if (uri !== RESOURCES[0].uri) {
+    throw new Error(`Unknown resource: ${uri}`);
+  }
+
+  return {
+    contents: [
+      {
+        uri,
+        mimeType: "text/plain",
+        text: "ok",
+      },
+    ],
+  };
+});
 
 // Register tool handlers
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -994,7 +1036,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await checkEnvironment(args.projectPath as string | undefined),
+              text: await checkEnvironment(
+                resolveProjectPath(args.projectPath as string | undefined)
+              ),
             },
           ],
         };
@@ -1004,7 +1048,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await investigateJwtClaims(args.projectPath as string),
+              text: await investigateJwtClaims(
+                resolveProjectPath(args.projectPath as string)
+              ),
             },
           ],
         };
@@ -1014,7 +1060,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await investigateResponseWrapper(args.projectPath as string),
+              text: await investigateResponseWrapper(
+                resolveProjectPath(args.projectPath as string)
+              ),
             },
           ],
         };
@@ -1025,7 +1073,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: await investigateEntityRelationships(
-                args.projectPath as string,
+                resolveProjectPath(args.projectPath as string),
                 args.entityName as string
               ),
             },
@@ -1037,7 +1085,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await findMissingProperties(args.projectPath as string),
+              text: await findMissingProperties(
+                resolveProjectPath(args.projectPath as string)
+              ),
             },
           ],
         };
@@ -1047,7 +1097,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await validateMavenCompile(args.projectPath as string),
+              text: await validateMavenCompile(
+                resolveProjectPath(args.projectPath as string)
+              ),
             },
           ],
         };
@@ -1058,7 +1110,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: await runTestCheckpoint(
-                args.projectPath as string,
+                resolveProjectPath(args.projectPath as string),
                 args.testClass as string,
                 args.testMethod as string | undefined
               ),
@@ -1072,7 +1124,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: await analyzeController(
-                args.projectPath as string,
+                resolveProjectPath(args.projectPath as string),
                 args.controllerName as string
               ),
             },
@@ -1085,7 +1137,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: await checkJsonNamingStrategy(
-                args.projectPath as string,
+                resolveProjectPath(args.projectPath as string),
                 args.dtoPackage as string
               ),
             },
@@ -1097,7 +1149,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await findBeansNeedingExclusion(args.projectPath as string),
+              text: await findBeansNeedingExclusion(
+                resolveProjectPath(args.projectPath as string)
+              ),
             },
           ],
         };
@@ -1108,7 +1162,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: await analyzeRepository(
-                args.projectPath as string,
+                resolveProjectPath(args.projectPath as string),
                 args.repositoryName as string
               ),
             },
@@ -1120,7 +1174,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: await checkSpringBootVersion(args.projectPath as string),
+              text: await checkSpringBootVersion(
+                resolveProjectPath(args.projectPath as string)
+              ),
             },
           ],
         };
@@ -1131,7 +1187,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: await investigateService(
-                args.projectPath as string,
+                resolveProjectPath(args.projectPath as string),
                 args.serviceName as string
               ),
             },

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "spring-integration-test": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-v", ".:/workspace", "spring-integration-test-mcp"]
+    }
+  }
+}
