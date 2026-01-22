@@ -1218,6 +1218,15 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("Spring Integration Test MCP Server running on stdio");
+
+  // Keep the event loop alive for stdio-based MCP sessions.
+  const keepAlive = setInterval(() => {}, 60_000);
+  const shutdown = () => {
+    clearInterval(keepAlive);
+    process.exit(0);
+  };
+  process.stdin.on("end", shutdown);
+  process.stdin.on("close", shutdown);
 }
 
 main().catch((error) => {

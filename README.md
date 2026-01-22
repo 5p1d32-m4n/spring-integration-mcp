@@ -105,6 +105,44 @@ npm run build
 }
 ```
 
+## Distrobox (Bazzite / immutable Fedora) notes
+
+If you are running Codex inside a Distrobox container, Podman inside the container
+may fail with a storage DB mismatch (host vs container paths). In that case, use
+one of the two approaches below.
+
+### Option A (recommended): run the MCP server directly with Node
+
+Build inside the container:
+
+```bash
+npm run build
+```
+
+Then point Codex to the compiled entrypoint:
+
+```toml
+[mcp_servers.spring-integration-test]
+command = "node"
+args = ["/home/brandon/Dev/spring-integration-test-mcp/dist/index.js"]
+```
+
+### Option B: use host Podman from inside Distrobox
+
+Build the image on the host:
+
+```bash
+podman build -t spring-integration-test-mcp /home/brandon/Dev/spring-integration-test-mcp
+```
+
+Then call host Podman via `distrobox-host-exec`:
+
+```toml
+[mcp_servers.spring-integration-test]
+command = "distrobox-host-exec"
+args = ["podman","run","-i","--rm","-v","/home/brandon/Dev/your-spring-project:/workspace","spring-integration-test-mcp"]
+```
+
 ## Troubleshooting
 
 ### MCP server not appearing
